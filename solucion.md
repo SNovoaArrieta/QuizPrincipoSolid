@@ -13,6 +13,7 @@ ParticipantRegistrar — registra participantes y retorna lista
 BonusCalculator — se encarga únicamente del cálculo (y la impresión) de bonificaciones.
 ReportService — orquesta generación de reportes usando ReportFormatter (responsabilidad: delegar formateo).
 
+
 ## 2) OCP (Abierto/Cerrado)
 generarReportes(String formato) contiene condicionales if (formato.equalsIgnoreCase("TEXTO")) ... else if (formato.equalsIgnoreCase("HTML")) ... — para añadir un nuevo formato habría que modificar este método, rompiendo OCP. 
 
