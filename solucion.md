@@ -33,9 +33,15 @@ Cuando creamos ReportFormatter y sus implementaciones, todas las implementacione
 ## Refactorización (aplicación LSP):
 Todas las implementaciones de ReportFormatter devuelven un String que ReportService imprimirá; ninguna implementación lanza excepciones inesperadas o cambia semántica esperada. Esto asegura que ReportService.generateReport("HTML") o ("TEXTO") producirá siempre un String válido.
 
+## 4) ISP (Segregación de Interfaces)
+La clase GestorCampeonato concentraba registro, cálculo de bonificaciones y generación de reportes en un mismo lugar. Esto obligaba a los clientes a depender de métodos que no necesitaban, violando ISP.
 
+## Por qué viola ISP:
+Porque un cliente que solo quisiera registrar equipos también dependía de métodos de bonificaciones y reportes, aumentando el acoplamiento innecesario.
 
-
-
-
-
+## Refactorización (aplicación ISP):
+Se separaron interfaces pequeñas y específicas:
+IParticipantRegistrar (solo registra).
+IBonusCalculator (solo calcula bonificaciones).
+IReportService (solo genera reportes).
+De esta forma, cada cliente depende únicamente de la interfaz que realmente necesita.
