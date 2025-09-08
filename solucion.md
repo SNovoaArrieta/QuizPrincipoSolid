@@ -266,3 +266,176 @@ class ReportService implements IReportService {
         }
     }
 }
+
+## Codigo Refactorizado
+
+package com.campeonato.gestor;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/* --- Clases de Entidad --- */
+class Equipo {
+    private String nombre;
+    private List<Jugador> jugadores = new ArrayList<>();
+    public Equipo(String nombre) { this.nombre = nombre; }
+    public String getNombre() { return nombre; }
+    public void agregarJugador(Jugador j) { this.jugadores.add(j); }
+    public List<Jugador> getJugadores() { return this.jugadores; }
+}
+
+class Jugador {
+    private String nombre;
+    private String posicion;
+    public Jugador(String nombre, String posicion) { this.nombre = nombre; this.posicion = posicion; }
+    public String getNombre() { return nombre; }
+    public String getPosicion() { return this.posicion; }
+}
+
+class Arbitro {
+    private String nombre;
+    public Arbitro(String nombre) { this.nombre = nombre; }
+    public String getNombre() { return nombre; }
+}
+
+/* ISP + DIP */
+interface IParticipantRegistrar {
+    void registrar(List<Equipo> equipos, List<Arbitro> arbitros);
+}
+
+interface IBonusCalculator {
+    void calcularBonificaciones(List<Equipo> equipos);
+}
+
+interface ReportFormatter { // DIP
+    String format(List<Equipo> equipos, List<Arbitro> arbitros);
+}
+
+interface IReportService {
+    void generarReporte(String formato);
+}
+
+/* SRP */
+class ParticipantRegistrar implements IParticipantRegistrar {
+    @Override
+    public void registrar(List<Equipo> equipos, List<Arbitro> arbitros) {
+        Equipo equipoA = new Equipo("Los Ganadores");
+        equipoA.agregarJugador(new Jugador("Juan Pérez", "Delantero"));
+        equipoA.agregarJugador(new Jugador("Pedro Pan", "Portero"));
+        equipos.add(equipoA);
+        System.out.println("Equipo 'Los Ganadores' registrado.");
+
+        Equipo equipoB = new Equipo("Los Retadores");
+        equipoB.agregarJugador(new Jugador("Alicia Smith", "Defensa"));
+        equipos.add(equipoB);
+        System.out.println("Equipo 'Los Retadores' registrado.");
+
+        arbitros.add(new Arbitro("Miguel Díaz"));
+        System.out.println("Árbitro 'Miguel Díaz' contratado.");
+    }
+}
+
+/* SRP */
+class BonusCalculator implements IBonusCalculator {
+    @Override
+    public void calcularBonificaciones(List<Equipo> equipos) {
+        System.out.println("\n--- Calculando Bonificaciones de Jugadores ---");
+        for (Equipo equipo : equipos) {
+            for (Jugador jugador : equipo.getJugadores()) {
+                if (jugador.getPosicion().equals("Delantero")) {
+                    System.out.println("Calculando bonificación alta para Delantero: " + jugador.getNombre());
+                } else if (jugador.getPosicion().equals("Portero")) {
+                    System.out.println("Calculando bonificación estándar para Portero: " + jugador.getNombre());
+                } else {
+                    System.out.println("Calculando bonificación base para: " + jugador.getNombre());
+                }
+            }
+        }
+    }
+}
+
+/* OCP + DIP */
+class TextReportFormatter implements ReportFormatter {
+    @Override
+    public String format(List<Equipo> equipos, List<Arbitro> arbitros) {
+        String contenidoReporte = "--- Reporte del Campeonato (TEXTO) ---\n";
+        contenidoReporte += "EQUIPOS:\n";
+        for (Equipo equipo : equipos) {
+            contenidoReporte += "- " + equipo.getNombre() + "\n";
+        }
+        contenidoReporte += "ÁRBITROS:\n";
+        for (Arbitro arbitro : arbitros) {
+            contenidoReporte += "- " + arbitro.getNombre() + "\n";
+        }
+        return contenidoReporte;
+    }
+}
+
+/* OCP + DIP */
+class HtmlReportFormatter implements ReportFormatter {
+    @Override
+    public String format(List<Equipo> equipos, List<Arbitro> arbitros) {
+        String contenidoHtml = "<html><body>\n";
+        contenidoHtml += "  <h1>Reporte del Campeonato</h1>\n";
+        contenidoHtml += "  <h2>Equipos</h2>\n  <ul>\n";
+        for (Equipo equipo : equipos) {
+            contenidoHtml += "    <li>" + equipo.getNombre() + "</li>\n";
+        }
+        contenidoHtml += "  </ul>\n  <h2>Árbitros</h2>\n  <ul>\n";
+        for (Arbitro arbitro : arbitros) {
+            contenidoHtml += "    <li>" + arbitro.getNombre() + "</li>\n";
+        }
+        contenidoHtml += "  </ul>\n</body></html>";
+        return contenidoHtml;
+    }
+}
+
+/* DIP */
+class ReportService implements IReportService {
+    private Map<String, ReportFormatter> formatters;
+    private List<Equipo> equipos;
+    private List<Arbitro> arbitros;
+
+    public ReportService(Map<String, ReportFormatter> formatters, List<Equipo> equipos, List<Arbitro> arbitros) {
+        this.formatters = formatters;
+        this.equipos = equipos;
+        this.arbitros = arbitros;
+    }
+
+    @Override
+    public void generarReporte(String formato) {
+        if (formato == null) return;
+        ReportFormatter formatter = formatters.get(formato.toUpperCase());
+        if (formatter != null) {
+            String salida = formatter.format(equipos, arbitros);
+            System.out.println(salida);
+        }
+    }
+}
+
+public class GestorCampeonato {
+    public static void main(String[] args) {
+        List<Equipo> equipos = new ArrayList<>();
+        List<Arbitro> arbitros = new ArrayList<>();
+
+        IParticipantRegistrar registrar = new ParticipantRegistrar();
+        registrar.registrar(equipos, arbitros);
+
+        IBonusCalculator bonusCalculator = new BonusCalculator();
+        bonusCalculator.calcularBonificaciones(equipos);
+
+        Map<String, ReportFormatter> formatters = new HashMap<>();
+        formatters.put("TEXTO", new TextReportFormatter());
+        formatters.put("HTML", new HtmlReportFormatter());
+
+        IReportService reportService = new ReportService(formatters, equipos, arbitros);
+
+        System.out.println("\n--- Generando Reportes ---");
+        reportService.generarReporte("TEXTO");
+
+        System.out.println("\n--- Generando más Reportes ---");
+        reportService.generarReporte("HTML");
+    }
+}
