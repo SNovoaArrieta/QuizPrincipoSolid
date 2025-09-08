@@ -46,15 +46,12 @@ IBonusCalculator (solo calcula bonificaciones).
 IReportService (solo genera reportes).
 De esta forma, cada cliente depende únicamente de la interfaz que realmente necesita.
 
-5) DIP (Inversión de Dependencias)
-
+## 5) DIP (Inversión de Dependencias)
 Antes, ReportService dependía directamente de clases concretas para generar reportes, lo que generaba alto acoplamiento.
 
-Por qué viola DIP:
-
+## Por qué viola DIP:
 Porque la clase de alto nivel (ReportService) dependía de implementaciones específicas (Texto, HTML, etc.), en lugar de depender de una abstracción.
 
-Refactorización (aplicación DIP):
-
+## Refactorización (aplicación DIP):
 Se creó la interfaz ReportFormatter y ReportService ahora recibe un Map<String, ReportFormatter>.
 De esta forma, ReportService depende de abstracciones y es fácil agregar nuevos formatos sin modificar la clase principal.
