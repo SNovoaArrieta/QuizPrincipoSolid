@@ -167,6 +167,22 @@ public class HtmlReportFormatter implements ReportFormatter {
 ## 4) ISP (Segregación de Interfaces)
 La clase GestorCampeonato concentraba registro, cálculo de bonificaciones y generación de reportes en un mismo lugar. Esto obligaba a los clientes a depender de métodos que no necesitaban, violando ISP.
 
+public class GestorCampeonato {
+    // ...
+
+    public void registrarParticipantes() {
+        // Registro de equipos y árbitros
+    }
+
+    public void calcularBonificaciones() {
+        // Cálculo de bonificaciones
+    }
+
+    public void generarReportes(String formato) {
+        // Generación de reportes (Texto / HTML)
+    }
+}
+
 ## Por qué viola ISP:
 Porque un cliente que solo quisiera registrar equipos también dependía de métodos de bonificaciones y reportes, aumentando el acoplamiento innecesario.
 
@@ -176,6 +192,22 @@ IParticipantRegistrar (solo registra).
 IBonusCalculator (solo calcula bonificaciones).
 IReportService (solo genera reportes).
 De esta forma, cada cliente depende únicamente de la interfaz que realmente necesita.
+
+interface IParticipantRegistrar {
+    void registrar(List<Equipo> equipos, List<Arbitro> arbitros);
+}
+
+interface IBonusCalculator {
+    void calcularBonificaciones(List<Equipo> equipos);
+}
+
+interface ReportFormatter { // Abstracción para formateo (DIP)
+    String format(List<Equipo> equipos, List<Arbitro> arbitros);
+}
+
+interface IReportService {
+    void generarReporte(String formato);
+}
 
 ## 5) DIP (Inversión de Dependencias)
 Antes, ReportService dependía directamente de clases concretas para generar reportes, lo que generaba alto acoplamiento.
