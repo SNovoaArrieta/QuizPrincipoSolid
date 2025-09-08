@@ -49,9 +49,57 @@ De esta forma, cada cliente depende únicamente de la interfaz que realmente nec
 ## 5) DIP (Inversión de Dependencias)
 Antes, ReportService dependía directamente de clases concretas para generar reportes, lo que generaba alto acoplamiento.
 
+public void generarReportes(String formato) {
+    if (formato.equalsIgnoreCase("TEXTO")) {
+        String contenidoReporte = "--- Reporte del Campeonato (TEXTO) ---\n";
+        contenidoReporte += "EQUIPOS:\n";
+        for (Equipo equipo : equipos) {
+            contenidoReporte += "- " + equipo.getNombre() + "\n";
+        }
+        contenidoReporte += "ÁRBITROS:\n";
+        for (Arbitro arbitro : arbitros) {
+            contenidoReporte += "- " + arbitro.getNombre() + "\n";
+        }
+        System.out.println(contenidoReporte);
+    } else if (formato.equalsIgnoreCase("HTML")) {
+        String contenidoHtml = "<html><body>\n";
+        contenidoHtml += " <h1>Reporte del Campeonato</h1>\n";
+        contenidoHtml += " <h2>Equipos</h2>\n <ul>\n";
+        for (Equipo equipo : equipos) {
+            contenidoHtml += " <li>" + equipo.getNombre() + "</li>\n";
+        }
+        contenidoHtml += " </ul>\n <h2>Árbitros</h2>\n <ul>\n";
+        for (Arbitro arbitro : arbitros) {
+            contenidoHtml += " <li>" + arbitro.getNombre() + "</li>\n";
+        }
+        contenidoHtml += " </ul>\n</body></html>";
+        System.out.println(contenidoHtml);
+    }
+}
+
 ## Por qué viola DIP:
 Porque la clase de alto nivel (ReportService) dependía de implementaciones específicas (Texto, HTML, etc.), en lugar de depender de una abstracción.
 
 ## Refactorización (aplicación DIP):
 Se creó la interfaz ReportFormatter y ReportService ahora recibe un Map<String, ReportFormatter>.
 De esta forma, ReportService depende de abstracciones y es fácil agregar nuevos formatos sin modificar la clase principal.
+
+class ReportService implements IReportService {
+    private Map<String, ReportFormatter> formatters;
+    private List<Equipo> equipos;
+    private List<Arbitro> arbitros;
+
+    public ReportService(Map<String, ReportFormatter> formatters, List<Equipo> equipos, List<Arbitro> arbitros) {
+        this.formatters = formatters;
+        this.equipos = equipos;
+        this.arbitros = arbitros;
+    }
+
+    @Override
+    public void generarReporte(String formato) {
+        ReportFormatter formatter = formatters.get(formato.toUpperCase());
+        if (formatter != null) {
+            System.out.println(formatter.format(equipos, arbitros));
+        }
+    }
+}
