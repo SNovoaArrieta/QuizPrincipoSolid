@@ -129,11 +129,40 @@ public class TextReportFormatter implements ReportFormatter {
 ## 3) LSP (Sustitución de Liskov)
 No hay herencia explícita en el anexo que sea problemática; sin embargo, la forma en que se llevan a cabo los reportes (condicionales) hace difícil sustituir piezas por otras sin afectar comportamiento. La refactorización crea jerarquías de formateadores que deben ser intercambiables sin cambiar el cliente.
 
+else if (formato.equalsIgnoreCase("HTML")) {
+    String contenidoHtml = "<html><body>\n";
+    contenidoHtml += " <h1>Reporte del Campeonato</h1>\n";
+    contenidoHtml += " <h2>Equipos</h2>\n <ul>\n";
+    for (Equipo equipo : equipos) {
+        contenidoHtml += " <li>" + equipo.getNombre() + "</li>\n";
+    }
+    contenidoHtml += " </ul>\n <h2>Árbitros</h2>\n <ul>\n";
+    for (Arbitro arbitro : arbitros) {
+        contenidoHtml += " <li>" + arbitro.getNombre() + "</li>\n";
+    }
+    contenidoHtml += " </ul>\n</body></html>";
+    System.out.println(contenidoHtml);
+}
+
 ## Por qué es importante aquí:
 Cuando creamos ReportFormatter y sus implementaciones, todas las implementaciones deben respetar el contrato (devolver un String formateado), de forma que ReportService pueda sustituir una implementación por otra sin alteración del flujo.
 
 ## Refactorización (aplicación LSP):
 Todas las implementaciones de ReportFormatter devuelven un String que ReportService imprimirá; ninguna implementación lanza excepciones inesperadas o cambia semántica esperada. Esto asegura que ReportService.generateReport("HTML") o ("TEXTO") producirá siempre un String válido.
+
+public class HtmlReportFormatter implements ReportFormatter {
+    @Override
+    public String format(List<Equipo> equipos, List<Arbitro> arbitros) {
+        String contenidoHtml = "<html><body>\n";
+        contenidoHtml += "  <h1>Reporte del Campeonato</h1>\n";
+        contenidoHtml += "  <h2>Equipos</h2>\n  <ul>\n";
+        for (Equipo e : equipos) contenidoHtml += "    <li>" + e.getNombre() + "</li>\n";
+        contenidoHtml += "  </ul>\n  <h2>Árbitros</h2>\n  <ul>\n";
+        for (Arbitro a : arbitros) contenidoHtml += "    <li>" + a.getNombre() + "</li>\n";
+        contenidoHtml += "  </ul>\n</body></html>";
+        return contenidoHtml;
+    }
+}
 
 ## 4) ISP (Segregación de Interfaces)
 La clase GestorCampeonato concentraba registro, cálculo de bonificaciones y generación de reportes en un mismo lugar. Esto obligaba a los clientes a depender de métodos que no necesitaban, violando ISP.
