@@ -4,6 +4,48 @@ El código original concentra múltiples responsabilidades en una única clase G
 ## 1) SRP —(Principio de Responsabilidad Única)
 La clase GestorCampeonato mezcla: registro de participantes, cálculo de bonificaciones, y generación/formatado de reportes (impresión en consola). Esto viola SRP porque una clase tiene múltiples razones para cambiar.
 
+class Equipo {
+    private String nombre;
+    private List<Jugador> jugadores = new ArrayList<>();
+    public Equipo(String nombre) { this.nombre = nombre; }
+    public String getNombre() { return nombre; }
+    public void agregarJugador(Jugador j) { this.jugadores.add(j); }
+    public List<Jugador> getJugadores() { return this.jugadores; }
+}
+
+class Jugador {
+    private String nombre;
+    private String posicion;
+    public Jugador(String nombre, String posicion) { this.nombre = nombre; this.posicion = posicion; }
+    public String getNombre() { return nombre; }
+    public String getPosicion() { return posicion; }
+}
+
+class Arbitro {
+    private String nombre;
+    public Arbitro(String nombre) { this.nombre = nombre; }
+    public String getNombre() { return nombre; }
+}
+
+class ParticipantRegistrar {
+    public void registrar(List<Equipo> equipos, List<Arbitro> arbitros) {
+        Equipo equipoA = new Equipo("Los Ganadores");
+        equipoA.agregarJugador(new Jugador("Juan Pérez", "Delantero"));
+        equipoA.agregarJugador(new Jugador("Pedro Pan", "Portero"));
+        equipos.add(equipoA);
+        System.out.println("Equipo 'Los Ganadores' registrado.");
+
+        Equipo equipoB = new Equipo("Los Retadores");
+        equipoB.agregarJugador(new Jugador("Alicia Smith", "Defensa"));
+        equipos.add(equipoB);
+        System.out.println("Equipo 'Los Retadores' registrado.");
+
+        arbitros.add(new Arbitro("Miguel Díaz"));
+        System.out.println("Árbitro 'Miguel Díaz' contratado.");
+    }
+}
+
+
 ## Por qué viola SRP:
 porque modifica la forma de generar reportes o en el formato de salida obliga a cambiar GestorCampeonato aunque no tenga relación con la lógica de registro o bonificaciones.
 
@@ -13,6 +55,23 @@ ParticipantRegistrar — registra participantes y retorna lista
 BonusCalculator — se encarga únicamente del cálculo (y la impresión) de bonificaciones.
 ReportService — orquesta generación de reportes usando ReportFormatter (responsabilidad: delegar formateo).
 
+public class ParticipantRegistrar {
+    public void registrar(List<Equipo> equipos, List<Arbitro> arbitros) {
+        Equipo equipoA = new Equipo("Los Ganadores");
+        equipoA.agregarJugador(new Jugador("Juan Pérez", "Delantero"));
+        equipoA.agregarJugador(new Jugador("Pedro Pan", "Portero"));
+        equipos.add(equipoA);
+        System.out.println("Equipo 'Los Ganadores' registrado.");
+
+        Equipo equipoB = new Equipo("Los Retadores");
+        equipoB.agregarJugador(new Jugador("Alicia Smith", "Defensa"));
+        equipos.add(equipoB);
+        System.out.println("Equipo 'Los Retadores' registrado.");
+
+        arbitros.add(new Arbitro("Miguel Díaz"));
+        System.out.println("Árbitro 'Miguel Díaz' contratado.");
+     }
+}
 
 ## 2) OCP (Abierto/Cerrado)
 generarReportes(String formato) contiene condicionales if (formato.equalsIgnoreCase("TEXTO")) ... else if (formato.equalsIgnoreCase("HTML")) ... — para añadir un nuevo formato habría que modificar este método, rompiendo OCP. 
