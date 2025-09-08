@@ -76,12 +76,55 @@ public class ParticipantRegistrar {
 ## 2) OCP (Abierto/Cerrado)
 generarReportes(String formato) contiene condicionales if (formato.equalsIgnoreCase("TEXTO")) ... else if (formato.equalsIgnoreCase("HTML")) ... — para añadir un nuevo formato habría que modificar este método, rompiendo OCP. 
 
+public void generarReportes(String formato) {
+    if (formato.equalsIgnoreCase("TEXTO")) {
+        String contenidoReporte = "--- Reporte del Campeonato (TEXTO) ---\n";
+        contenidoReporte += "EQUIPOS:\n";
+        for (Equipo equipo : equipos) {
+            contenidoReporte += "- " + equipo.getNombre() + "\n";
+        }
+        contenidoReporte += "ÁRBITROS:\n";
+        for (Arbitro arbitro : arbitros) {
+            contenidoReporte += "- " + arbitro.getNombre() + "\n";
+        }
+        System.out.println(contenidoReporte);
+    } else if (formato.equalsIgnoreCase("HTML")) {
+        String contenidoHtml = "<html><body>\n";
+        contenidoHtml += " <h1>Reporte del Campeonato</h1>\n";
+        contenidoHtml += " <h2>Equipos</h2>\n <ul>\n";
+        for (Equipo equipo : equipos) {
+            contenidoHtml += " <li>" + equipo.getNombre() + "</li>\n";
+        }
+        contenidoHtml += " </ul>\n <h2>Árbitros</h2>\n <ul>\n";
+        for (Arbitro arbitro : arbitros) {
+            contenidoHtml += " <li>" + arbitro.getNombre() + "</li>\n";
+        }
+        contenidoHtml += " </ul>\n</body></html>";
+        System.out.println(contenidoHtml);
+    }
+}
+
 ## Por qué viola OCP:
 El método no está abierto para extensión sin modificación. Cada nuevo formato implica editar el método central.
 
 ## Refactorización (aplicación OCP):
 Definimos la interfaz ReportFormatter y creamos implementaciones TextReportFormatter y HtmlReportFormatter. ReportService solicita un ReportFormatter (vía fábrica o inyección) y lo utiliza. Para añadir un nuevo formato solo hay que crear una nueva implementación de ReportFormatter y registrarla — no modificar ReportService.
 
+public interface ReportFormatter {
+    String format(List<Equipo> equipos, List<Arbitro> arbitros);
+}
+
+public class TextReportFormatter implements ReportFormatter {
+    @Override
+    public String format(List<Equipo> equipos, List<Arbitro> arbitros) {
+        String contenidoReporte = "--- Reporte del Campeonato (TEXTO) ---\n";
+        contenidoReporte += "EQUIPOS:\n";
+        for (Equipo e : equipos) contenidoReporte += "- " + e.getNombre() + "\n";
+        contenidoReporte += "ÁRBITROS:\n";
+        for (Arbitro a : arbitros) contenidoReporte += "- " + a.getNombre() + "\n";
+        return contenidoReporte;
+    }
+}
 
 ## 3) LSP (Sustitución de Liskov)
 No hay herencia explícita en el anexo que sea problemática; sin embargo, la forma en que se llevan a cabo los reportes (condicionales) hace difícil sustituir piezas por otras sin afectar comportamiento. La refactorización crea jerarquías de formateadores que deben ser intercambiables sin cambiar el cliente.
